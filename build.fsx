@@ -123,8 +123,7 @@ let runTestTask name =
     taskName ==> "RunTests" |> ignore
 
 [ "FSharp.MongoDB.Bson.Tests"
-  "FSharp.MongoDB.Driver.FunctionalTests"
-  "FSharp.MongoDB.Driver.Tests" ]
+  (* "FSharp.MongoDB.Driver.Tests" *) ]
 |> List.iter runTestTask
 
 // -----------------------------------------------------------------------------
