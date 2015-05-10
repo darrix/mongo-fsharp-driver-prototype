@@ -24,15 +24,11 @@ Dependencies
 Building
 --------
 
-The F# driver has been developed on top of the refactored [Core .NET
-driver](https://github.com/mongodb/mongo-csharp-driver/tree/v2.0).
-This new ***Core .Net driver*** is still in development as well, and
-hence unavailable on NuGet. Thus, the branch has been setup as a
-submodule. This is intended to change in the future.
+  - Simply build the `FSharpDriver-2012.sln` solution in Visual Studio, Xamarin Studio, or Mono Develop.
+    You can also use the FAKE script:
 
-    git submodule update --init
-    <compile mongo-csharp-driver>
-    <compile mongo-fsharp-driver-prototype>
+      * Windows: Run _build.cmd_
+      * Mono: Run _build.sh_
 
 License
 -------

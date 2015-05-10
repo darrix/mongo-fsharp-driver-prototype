@@ -1,0 +1,17 @@
+framework: net45
+source http://nuget.org/api/v2
+
+nuget MongoDB.Bson 2.0.0
+nuget MongoDB.Driver.Core 2.0.0
+
+// for building the project
+nuget FAKE
+nuget SourceLink.Fake
+
+// for executing tests
+nuget NUnit
+nuget NUnit.Runners
+nuget Unquote
+
+// for generating documentation
+nuget FSharp.Formatting
