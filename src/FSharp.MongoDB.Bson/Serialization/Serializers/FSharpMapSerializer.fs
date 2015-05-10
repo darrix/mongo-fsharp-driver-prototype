@@ -24,23 +24,17 @@ open MongoDB.Bson.Serialization.Serializers
 /// A serializer for F# maps.
 /// </summary>
 type FSharpMapSerializer<'KeyType, 'ValueType when 'KeyType : comparison>() =
-    inherit BsonBaseSerializer()
+    inherit SerializerBase<Map<'KeyType, 'ValueType>>()
 
-    let serializer = DictionarySerializer<'KeyType, 'ValueType>()
+    let serializer = DictionaryInterfaceImplementerSerializer<Dictionary<'KeyType, 'ValueType>>()
 
-    override __.Serialize(writer, nominalType, value, options) =
-        let dictValue =
-            value
-            :?> Map<'KeyType, 'ValueType>
-            |> Map.toSeq
-            |> dict
+    override __.Serialize(context, args, value) =
+        let dictValue = Dictionary()
+        value |> Map.iter (fun k v -> dictValue.Add(k, v))
 
-        serializer.Serialize(writer, typeof<IDictionary<'KeyType, 'ValueType>>, dictValue, options)
+        serializer.Serialize(context, args, dictValue)
 
-    override __.Deserialize(reader, nominalType, actualType, options) =
-        // deserialize into `IDictionary` first, then convert to a map
-        serializer.Deserialize(reader, typeof<IDictionary<'KeyType, 'ValueType>>, options)
-        :?> IDictionary<'KeyType, 'ValueType>
+    override __.Deserialize(context, args) =
+        serializer.Deserialize(context, args)
         |> Seq.map (|KeyValue|)
-        |> Map.ofSeq<'KeyType, 'ValueType>
-        |> box
+        |> Map.ofSeq

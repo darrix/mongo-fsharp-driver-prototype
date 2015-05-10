@@ -44,7 +44,9 @@ type FSharpValueSerializationProvider() =
 
             // Check that `typ` is an option type
             if isOption typ then
-                OptionTypeSerializer(typ) :> IBsonSerializer
+                typedefof<OptionTypeSerializer<_>>.MakeGenericType (typ.GetGenericArguments())
+                |> System.Activator.CreateInstance
+                :?> IBsonSerializer
 
             // Check that `typ` is a list type
             elif isList typ then
@@ -60,7 +62,7 @@ type FSharpValueSerializationProvider() =
 
             // Check that `typ` is a set type
             elif isSet typ then
-                typedefof<FSharpSetSerializer< _>>.MakeGenericType (typ.GetGenericArguments())
+                typedefof<FSharpSetSerializer<_>>.MakeGenericType (typ.GetGenericArguments())
                 |> System.Activator.CreateInstance
                 :?> IBsonSerializer
 
@@ -72,12 +74,12 @@ type FSharpValueSerializationProvider() =
                 // Handles non-singleton discriminated unions
                 if nested.Length > 0 || props.Length > 0 then
                     nested |> Array.iter (fun x -> BsonClassMap.LookupClassMap x |> ignore)
-                    DiscriminatedUnionSerializer(typ) :> IBsonSerializer
+                    typedefof<DiscriminatedUnionSerializer<_>>.MakeGenericType [| typ |]
+                    |> System.Activator.CreateInstance
+                    :?> IBsonSerializer
 
                 // Handles singleton discriminated unions
-                else
-                    let classMap = BsonClassMap.LookupClassMap typ
-                    BsonClassMapSerializer(classMap) :> IBsonSerializer
+                else null
 
             // Otherwise, signal we do not provide serialization for this type
             else null

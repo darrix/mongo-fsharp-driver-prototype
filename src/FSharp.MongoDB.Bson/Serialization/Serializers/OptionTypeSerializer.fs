@@ -24,24 +24,27 @@ open MongoDB.Bson.Serialization.Serializers
 /// A serializer for option types.
 /// Writes the value for the <c>Some</c> case, and <c>null</c> for the None case.
 /// </summary>
-type OptionTypeSerializer(typ : System.Type) =
-    inherit BsonBaseSerializer()
+type OptionTypeSerializer<'typ>() =
+    inherit SerializerBase<'typ option>()
 
+    let typ = typeof<'typ option>
     let cases = FSharpType.GetUnionCases(typ) |> Seq.map (fun x -> (x.Name, x)) |> dict
 
-    override __.Serialize(writer, nominalType, value, options) =
+    override __.Serialize(context, args, value) =
+        let writer = context.Writer
         let value = Some (typ.GetProperty("Value").GetValue(value, [| |]))
 
-        match unbox value with
-        | Some x -> BsonSerializer.Serialize(writer, x.GetType(), x, options)
-        | None -> BsonSerializer.Serialize(writer, typeof<obj>, null, options)
+        match value with
+        | Some x -> BsonSerializer.Serialize(writer, x.GetType(), x)
+        | None -> BsonSerializer.Serialize(writer, typeof<obj>, null)
 
-    override __.Deserialize(reader, nominalType, actualType, options) =
-        let value = BsonSerializer.Deserialize(reader, typ.GenericTypeArguments.[0], options)
+    override __.Deserialize(context, args) =
+        let reader = context.Reader
+        let value = BsonSerializer.Deserialize(reader, typ.GenericTypeArguments.[0])
 
         let (case, args) =
             match value with
             | null -> (cases.["None"], [| |])
             | _ -> (cases.["Some"], [| value |])
 
-        FSharpValue.MakeUnion(case, args)
+        FSharpValue.MakeUnion(case, args) :?> 'typ option
